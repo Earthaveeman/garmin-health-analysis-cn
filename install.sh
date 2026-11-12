@@ -47,7 +47,7 @@ echo "接下来的步骤："
 echo "  1. 填入你的佳明账号信息："
 echo "     - 编辑 config.json，或者"
 echo "     - 设置 GARMIN_EMAIL 和 GARMIN_PASSWORD 环境变量，或者"
-echo "     - 添加到 ~/.clawdbot/clawdbot.json 的技能配置中"
+echo "     - 或添加到你所用 AI 助手的技能配置中（若支持，如 OpenClaw 的 ~/.clawdbot/clawdbot.json）"
 echo
 echo "  2. 登录认证："
 echo "     python3 scripts/garmin_auth.py login"

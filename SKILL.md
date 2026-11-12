@@ -1,7 +1,7 @@
 ---
-name: garmin-health-analysis
+name: garmin-health-analysis-cn
 description: 用自然语言与你的佳明（Garmin）数据对话，专为跑者设计 —— "帮我分析一下上周的比赛数据"、"帮我分析一下最近的身体状况"、"我昨晚睡得怎么样？"。可获取 20 余项健康指标（睡眠阶段、身体电量、心率变异性、最大摄氧量、训练准备度、身体成分、血氧），下载 FIT/GPX 文件进行跑步路线与配速分析，查询任意位置的海拔与配速，并生成可交互的健康仪表盘。从简单的"给我看这周的跑步记录"到深入的"分析我的训练负荷与恢复状况"均可胜任。
-version: 1.0.0
+version: 1.0.1
 author: Earthaveeman
 metadata: {"clawdbot":{"emoji":"⌚","requires":{"env":["GARMIN_EMAIL","GARMIN_PASSWORD"]},"install":[{"id":"garminconnect","kind":"python","package":"garminconnect","label":"Install garminconnect (pip)"},{"id":"fitparse","kind":"python","package":"fitparse","label":"Install fitparse (pip)"},{"id":"gpxpy","kind":"python","package":"gpxpy","label":"Install gpxpy (pip)"}]}}
 ---
@@ -24,15 +24,15 @@ pip3 install garminconnect
 
 提供佳明 Connect 账号信息的方式有三种：
 
-#### 方式 A：AI 助手配置文件（推荐，可在界面中设置）
+#### 方式 A：AI 助手的技能配置（可选，视平台支持）
 
-将账号信息添加到 `~/.clawdbot/clawdbot.json`：
+如果你使用的 AI 助手支持在技能配置中设置环境变量，可以直接添加。以 OpenClaw 为例，将账号信息添加到 `~/.clawdbot/clawdbot.json`：
 
 ```json
 {
   "skills": {
     "entries": {
-      "garmin-health-analysis": {
+      "garmin-health-analysis-cn": {
         "enabled": true,
         "env": {
           "GARMIN_EMAIL": "your-email@example.com",
@@ -44,15 +44,16 @@ pip3 install garminconnect
 }
 ```
 
-**提示**：也可以通过 AI 助手界面中的"技能设置"面板进行配置。
+**提示**：以 OpenClaw 为例，也可以通过其界面中的"技能设置"面板进行配置。
 
 #### 方式 B：本地配置文件
 
 在技能目录下创建配置文件：
 
+将本技能安装到你的 AI 助手的技能目录下（目录位置因平台而异，例如 OpenClaw 为 `~/.clawdbot/skills/`，Claude Code 为 `~/.claude/skills/` 等），然后进入技能目录：
+
 ```bash
-cd ~/.clawdbot/skills/garmin-health-analysis
-# 或：cd <工作目录>/skills/garmin-health-analysis
+cd <技能目录>/garmin-health-analysis-cn
 cp config.example.json config.json
 # 编辑 config.json，填入你的邮箱和密码
 ```
@@ -69,6 +70,7 @@ cp config.example.json config.json
 **说明**：
 - `config.json` 已被 git 忽略，不会上传，以保护你的账号安全。
 - **中国大陆佳明账户**请将 `is_cn` 设为 `true`，登录时会连接佳明中国服务器（connect.garmin.cn）。
+- **国际版账户**请将 `is_cn` 设为 `false`（或删除该字段），登录时会连接国际服务器（connect.garmin.com）。
 
 #### 方式 C：命令行参数
 
@@ -93,9 +95,9 @@ python3 scripts/garmin_auth.py login
 1. 命令行参数（`--email`、`--password`、`--cn`）
 2. 本地配置文件（`config.json`）
 3. 环境变量（`GARMIN_EMAIL`、`GARMIN_PASSWORD`）
-4. AI 助手配置（`skills.entries.garmin-health-analysis.env`）
+4. AI 助手的技能配置（若平台支持，如 OpenClaw 的 `skills.entries.garmin-health-analysis-cn.env`）
 
-会话令牌保存在 `~/.clawdbot/garmin-tokens.json`，并会自动刷新。
+会话令牌保存在 `~/.garmin-health-analysis-cn/tokens/`（可通过环境变量 `GARMIN_TOKEN_DIR` 自定义位置），并会自动刷新。
 
 查看登录状态：
 
@@ -229,7 +231,7 @@ python3 scripts/garmin_chart.py dashboard --days 90 --output ~/Desktop/garmin-he
 ## 常见问题排查
 
 ### 登录认证问题
-- **"账号或密码错误"**：核对邮箱和密码，尝试登录佳明 Connect 网页版验证
+- **"账号或密码错误"**：核对邮箱和密码，尝试登录佳明 Connect 网页版验证；同时确认 `is_cn` 设置与账号注册区域一致（区域不匹配也会导致登录失败）
 - **"令牌已过期"**：重新运行 `python3 scripts/garmin_auth.py login ...`
 - **"请求过于频繁"**：佳明限制了请求频率，请等待几分钟后再试
 
@@ -244,7 +246,7 @@ python3 scripts/garmin_chart.py dashboard --days 90 --output ~/Desktop/garmin-he
 
 ## 隐私说明
 
-- 账号令牌仅保存在本地 `~/.clawdbot/garmin-tokens.json`
+- 账号令牌仅保存在本地 `~/.garmin-health-analysis-cn/tokens/`（可通过环境变量 `GARMIN_TOKEN_DIR` 自定义）
 - 会话令牌自动刷新
 - 除佳明官方服务器外，不会向任何其他地方发送数据
 - 删除令牌文件即可随时撤销授权
@@ -271,6 +273,7 @@ python3 scripts/garmin_chart.py dashboard --days 90 --output ~/Desktop/garmin-he
 
 - **创建日期**：2026-11-11
 - **作者**：Earthaveeman
-- **版本**：1.0.0（2026-11-11 首次发布，中国大陆适配版）
+- **版本**：1.0.1（2026-11-12 更新，平台通用化与双区域支持说明）
+- **历史版本**：1.0.0（2026-11-11 首次发布，中国大陆适配版）
 - **依赖**：garminconnect、fitparse、gpxpy（Python 库）
 - **许可证**：MIT

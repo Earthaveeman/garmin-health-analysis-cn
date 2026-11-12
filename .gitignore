@@ -2,7 +2,7 @@
 config.json
 .env
 
-# 运行时生成的令牌与会话文件
+# 运行时生成的令牌与会话文件（令牌目录默认在 ~/.garmin-health-analysis-cn/，位于仓库外）
 *.token
 garmin-tokens.json
 *.session

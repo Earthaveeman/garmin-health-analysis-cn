@@ -18,7 +18,9 @@ except ImportError:
     print("Install with: pip3 install garminconnect", file=sys.stderr)
     sys.exit(1)
 
-TOKEN_DIR = Path.home() / ".clawdbot" / "garmin"
+TOKEN_DIR = Path(
+    os.environ.get("GARMIN_TOKEN_DIR") or Path.home() / ".garmin-health-analysis-cn" / "tokens"
+)
 CONFIG_FILE = Path(__file__).parent.parent / "config.json"
 
 
@@ -147,7 +149,9 @@ def main():
         is_cn = args.cn
 
         # Priority: CLI args > config.json > environment variables
-        if not email or not password or not is_cn:
+        # Only fall back to config when credentials are missing from CLI/env,
+        # so an explicitly CLI-provided login never gets its region overwritten.
+        if not email or not password:
             config = load_config()
             if config:
                 email = email or config.get("email")
@@ -164,7 +168,7 @@ def main():
             print("  1. CLI: --email and --password", file=sys.stderr)
             print("  2. Config: create config.json from config.example.json", file=sys.stderr)
             print("  3. Env vars: GARMIN_EMAIL and GARMIN_PASSWORD", file=sys.stderr)
-            print("  4. Clawdbot config: skills.entries.garmin-health-analysis.env", file=sys.stderr)
+            print("  4. AI assistant skill config (e.g. OpenClaw: skills.entries.garmin-health-analysis-cn.env)", file=sys.stderr)
             sys.exit(1)
         
         success = login(email, password, is_cn=is_cn)

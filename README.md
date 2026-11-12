@@ -4,13 +4,15 @@
 
 从你的佳明设备获取 20 余项健康指标：睡眠阶段、身体电量（Body Battery）、心率变异性（HRV）、最大摄氧量（VO2 Max）、训练准备度、身体成分、血氧（SPO2）等。支持下载 FIT/GPX 文件、查询任意位置的海拔与配速，并生成可交互的健康仪表盘。
 
-**本版本已适配中国大陆地区佳明账户（佳明中国，connect.garmin.cn）。**
+> **🌍 账号区域说明：本 Skill 同时支持中国大陆版与国际版佳明账号**
+>
+> - 通过配置文件中的 `is_cn` 字段（或登录命令的 `--cn` 参数）选择要连接的服务器：`true` 连接**佳明中国**（[connect.garmin.cn](https://connect.garmin.cn)），`false` 连接**国际版**（[connect.garmin.com](https://connect.garmin.com)）；
+> - 配置模板 `config.example.json` 默认 `is_cn: true`（面向中国大陆用户），**国际版用户请将其改为 `false`**；
+> - 请务必使用与账号注册区域一致的服务器，区域不匹配会导致登录失败。
 
 ---
 
 ## 🚀 安装
-
-**适合场景**：自动化健康监测、定时报告、主动健康提醒
 
 ```bash
 # 方式一：使用安装脚本（推荐）
@@ -26,6 +28,8 @@ python3 scripts/garmin_auth.py login
 **[📖 完整安装与使用说明](SKILL.md)**
 
 ## ⚡ 功能特性
+
+**适合场景**：自动化健康监测、定时报告、主动健康提醒
 
 - **自然语言查询**："帮我分析一下最近的身体状况" → 即刻生成身体电量与恢复分析
 - **睡眠分析**：睡眠时长、睡眠阶段（浅睡/深睡/快速眼动）、睡眠评分、趋势变化
@@ -63,7 +67,7 @@ python3 scripts/garmin_auth.py login
 ## 📦 文件结构
 
 ```
-garmin-health-analysis/
+garmin-health-analysis-cn/
 ├── SKILL.md                       # 技能安装与使用说明
 ├── README.md                      # 本文件
 ├── install.sh                     # 一键安装脚本
@@ -89,12 +93,19 @@ garmin-health-analysis/
 - 不使用云存储、不向外部共享数据
 - 开源项目，代码可自行审查
 
-## 📚 相关文档
+## 📚 相关文档与链接
+
+**项目文档**
 
 - **[SKILL.md](SKILL.md)** - 完整的安装、命令与故障排查说明
 - **[references/health_analysis.md](references/health_analysis.md)** - 有科学依据的指标解读方法
 - **[references/api.md](references/api.md)** - 佳明 Connect 接口详细说明
 - **[references/extended_capabilities.md](references/extended_capabilities.md)** - 进阶功能说明
+
+**官方链接**
+
+- **佳明 Connect 中国大陆版**：[connect.garmin.cn](https://connect.garmin.cn)
+- **佳明 Connect 国际版**：[connect.garmin.com](https://connect.garmin.com)
 
 ## 🐛 常见问题排查
 
@@ -102,7 +113,7 @@ garmin-health-analysis/
 - 重新运行 `python3 scripts/garmin_auth.py login` 刷新令牌
 - 检查 config.json 或环境变量中的账号信息是否正确
 - 尝试登录佳明 Connect 网页版，确认账号可用
-- 中国大陆账户请确认配置文件中 `is_cn` 已设为 `true`，或在命令中加入 `--cn` 参数
+- 请确认配置文件中的 `is_cn` 与你的账号注册区域一致（中国大陆 `true`，国际版 `false`），或使用 `--cn` 参数显式指定
 
 **缺少数据？**
 - 部分指标需要特定设备支持（身体电量需要支持心率变异性的手表）
@@ -116,15 +127,11 @@ garmin-health-analysis/
 ## 📄 版本信息
 
 - **作者**：Earthaveeman
-- **版本**：1.0.0（2026-11-11 首次发布，中国大陆适配版）
-- **更新日期**：2026-11-11
+- **版本**：1.0.1（2026-11-12 更新）
+- **首次发布**：1.0.0（2026-11-11，中国大陆适配版）
+- **更新日期**：2026-11-12
 - **许可证**：MIT
 - **依赖库**：garminconnect、fitparse、gpxpy（均通过 pip 安装）
-
-## 🔗 相关链接
-
-- **佳明 Connect 中国大陆版**：[connect.garmin.cn](https://connect.garmin.cn)
-- **佳明 Connect 国际版**：[connect.garmin.com](https://connect.garmin.com)
 
 ---
 
