@@ -1,7 +1,7 @@
 ---
 name: garmin-health-analysis-cn
 description: 用自然语言与你的佳明（Garmin）数据对话，专为跑者设计 —— "帮我分析一下上周的比赛数据"、"帮我分析一下最近的身体状况"、"我昨晚睡得怎么样？"。可获取 20 余项健康指标（睡眠阶段、身体电量、心率变异性、最大摄氧量、训练准备度、身体成分、血氧），下载 FIT/GPX 文件进行跑步路线与配速分析，查询任意位置的海拔与配速，并生成可交互的健康仪表盘。从简单的"给我看这周的跑步记录"到深入的"分析我的训练负荷与恢复状况"均可胜任。当用户请求分析跑步或比赛数据时，会自动获取比赛日期前后各 3 天内的全部可获取数据（涵盖跑步记录、健康指标、HRV、身体电量以及其他所有可用数据，确保完整无遗漏），综合分析后生成 HTML 可视化图表，清晰呈现关键指标与趋势。
-version: 1.0.2
+version: 1.1.1
 author: Earthaveeman
 metadata: {"clawdbot":{"emoji":"⌚","requires":{"env":["GARMIN_EMAIL","GARMIN_PASSWORD"]},"install":[{"id":"garminconnect","kind":"python","package":"garminconnect","label":"Install garminconnect (pip)"},{"id":"fitparse","kind":"python","package":"fitparse","label":"Install fitparse (pip)"},{"id":"gpxpy","kind":"python","package":"gpxpy","label":"Install gpxpy (pip)"}]}}
 ---
@@ -98,6 +98,13 @@ python3 scripts/garmin_auth.py login
 4. AI 助手的技能配置（若平台支持，如 OpenClaw 的 `skills.entries.garmin-health-analysis-cn.env`）
 
 会话令牌保存在 `~/.garmin-health-analysis-cn/tokens/`（可通过环境变量 `GARMIN_TOKEN_DIR` 自定义位置），并会自动刷新。
+
+**服务器区域（`is_cn`）的一致性保证**：
+
+- 登录成功后，实际使用的区域会随令牌一并持久化到令牌目录下的 `meta.json`（含 `is_cn` 与登录时间）。
+- 之后所有脚本复用令牌时，均以 `meta.json` 记录的区域连接对应服务器（即**令牌由哪个域签发，就连接哪个域**），优先级为：`meta.json` > 环境变量 `GARMIN_IS_CN`（`true`/`1` 等）> `config.json` 的 `is_cn`（旧版令牌无 `meta.json` 时的回退）。
+- 因此用 `--cn` 登录的中国大陆账户即使没有 `config.json`，复用令牌时也会正确连接 connect.garmin.cn，不会再出现"令牌签发域与复用域错配导致的鉴权失败"。
+- 若令牌失效且 `config.json` 中保存了账号密码，脚本会**自动尝试重新登录一次**并刷新令牌，无需手动干预。
 
 查看登录状态：
 
@@ -344,7 +351,8 @@ python3 scripts/garmin_activity_files.py query --file /tmp/activity_<ID>.fit --d
 
 ### 登录认证问题
 - **"账号或密码错误"**：核对邮箱和密码，尝试登录佳明 Connect 网页版验证；同时确认 `is_cn` 设置与账号注册区域一致（区域不匹配也会导致登录失败）
-- **"令牌已过期"**：重新运行 `python3 scripts/garmin_auth.py login ...`
+- **"令牌已过期" / 反复提示未认证**：脚本会优先按登录时记录的区域（`tokens/meta.json`）复用令牌，并在失效时用 `config.json` 凭据自动重登一次；若仍失败，删除 `~/.garmin-health-analysis-cn/tokens/` 目录后重新运行 `python3 scripts/garmin_auth.py login`（注意带上与账号区域一致的 `--cn` 或在 `config.json` 中正确设置 `is_cn`）
+- **旧版令牌区域错配**（曾用 `--cn` 登录但脚本连了国际服务器导致令牌失效）：重新登录一次即可，新版会把区域写入 `meta.json`，之后自动保持一致
 - **"请求过于频繁"**：佳明限制了请求频率，请等待几分钟后再试
 
 ### 数据缺失
@@ -358,10 +366,10 @@ python3 scripts/garmin_activity_files.py query --file /tmp/activity_<ID>.fit --d
 
 ## 隐私说明
 
-- 账号令牌仅保存在本地 `~/.garmin-health-analysis-cn/tokens/`（可通过环境变量 `GARMIN_TOKEN_DIR` 自定义）
+- 账号令牌仅保存在本地 `~/.garmin-health-analysis-cn/tokens/`（可通过环境变量 `GARMIN_TOKEN_DIR` 自定义），目录下仅含令牌文件与记录登录区域的 `meta.json`（不含密码）
 - 会话令牌自动刷新
 - 除佳明官方服务器外，不会向任何其他地方发送数据
-- 删除令牌文件即可随时撤销授权
+- 删除令牌目录（含 `meta.json`）即可随时撤销授权
 
 ## 对比：佳明 与 Whoop
 
@@ -385,7 +393,7 @@ python3 scripts/garmin_activity_files.py query --file /tmp/activity_<ID>.fit --d
 
 - **创建日期**：2026-11-11
 - **作者**：Earthaveeman
-- **版本**：1.1.0（2026-11-24 更新，新增 `scripts/report_style.py` 统一报告样式模块：纯内联 SVG、无外部依赖，garmin_chart.py 全面改版为比赛分析报告同款样式，SKILL.md 明确所有 HTML 输出的样式规范）
-- **历史版本**：1.0.2（2026-11-16，新增「跑步/比赛数据分析流程」）；1.0.1（2026-11-12，平台通用化与双区域支持说明）；1.0.0（2026-11-11 首次发布，中国大陆适配版）
+- **版本**：1.1.1（2026-11-24 更新，修复令牌生成与复用的服务器区域不一致问题：登录区域持久化到 `tokens/meta.json`，新增 `GARMIN_IS_CN` 环境变量与令牌失效自动重登）
+- **历史版本**：1.1.0（2026-11-24，新增 `scripts/report_style.py` 统一报告样式模块：纯内联 SVG、无外部依赖，garmin_chart.py 全面改版为比赛分析报告同款样式，SKILL.md 明确所有 HTML 输出的样式规范）；1.0.2（2026-11-16，新增「跑步/比赛数据分析流程」）；1.0.1（2026-11-12，平台通用化与双区域支持说明）；1.0.0（2026-11-11 首次发布，中国大陆适配版）
 - **依赖**：garminconnect、fitparse、gpxpy（Python 库）
 - **许可证**：MIT

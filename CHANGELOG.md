@@ -1,5 +1,15 @@
 # 更新日志
 
+## v1.1.1（2026-11-24）
+
+### 🐛 修复：令牌生成与复用的服务器区域不一致
+
+- **问题**：`garmin_auth.py login` 的区域（`is_cn`）由 CLI `--cn` / config.json 决定，而 `get_client()`（所有数据脚本共用）复用令牌时只读 config.json 的 `is_cn`。若用 `--cn` 登录但没有 config.json（或 config 的 `is_cn` 与登录区域不符），会用国际服务器恢复佳明中国签发的令牌，导致所有脚本报"Not authenticated"且重新登录也无法修复
+- **修复**：登录成功后把实际使用的区域持久化到令牌目录下的 `meta.json`；`get_client()` 统一通过 `resolve_is_cn()` 解析区域（优先级：`meta.json` > 环境变量 `GARMIN_IS_CN` > `config.json` 回退），确保"令牌由哪个域签发，复用时就连接哪个域"
+- **增强**：令牌失效时，若 `config.json` 存有账号密码，`get_client()` 自动尝试重新登录一次并刷新令牌；`status` 命令现显示令牌复用所用的服务器区域
+- 文档同步更新：SKILL.md / README.md 说明区域一致性保证与新的排查步骤
+- 旧版令牌（无 `meta.json`）自动回退到原有解析方式，升级后无需强制重新登录；建议重新登录一次以生成 `meta.json`
+
 ## v1.1.0（2026-11-24）
 
 ### 🎨 统一报告样式（重磅）
