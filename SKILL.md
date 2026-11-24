@@ -164,7 +164,26 @@ python3 scripts/garmin_chart.py dashboard --days 30
 python3 scripts/garmin_chart.py dashboard --days 90 --output ~/Desktop/garmin-health.html
 ```
 
-图表会自动在默认浏览器中打开，采用 Chart.js 绘制，配有现代化的渐变设计、统计卡片和可交互的悬浮提示。
+图表会自动在默认浏览器中打开。
+
+### 统一报告样式（report_style.py）
+
+所有 HTML 报告（含 AI 自行生成的分析页面）**必须统一采用本技能的标准样式**，标准样式定义在 `scripts/report_style.py`，与 `example/` 目录下的比赛分析报告完全一致：
+
+- **纯内联 SVG 图表**：不使用 Chart.js 或任何 CDN/外部依赖，可离线直接打开；`viewBox` 自适应宽度
+- **设计系统**：蓝色渐变（#0d47a1 → #1a73e8 → #2196f3）大圆角 hero 横幅（装饰圆 + tag 徽章 + 大标题 + 黄色 PR 徽章）、蓝色圆角数字块的编号章节标题（h2）+ 灰色说明文字、白色圆角卡片（card）、统计卡片网格（stat，g4/g3/g2 栅格：12.5px 灰标签 / 23px 蓝色大数值 / 灰色小注）
+- **组件**：note 提示条（蓝 info / 黄 warn / 绿 good，左侧粗边框）、kv 键值行（虚线分隔）、sleepbar 睡眠阶段堆叠条（深睡 #304ffe / 浅睡 #7ea8ff / REM #ff9e40 / 清醒 #bdbdbd）、sticky 表头表格（hover 行高亮、圆角滚动容器）、灰色免责声明页脚
+- **通用图表函数**：`svg_line_chart()`（支持参考区间带、图例、y 轴格式化、tooltip）、`svg_bar_chart()`（支持参考线、柱顶数值、按值着色）、`hero()`、`render_page()`（自动编号章节 + 页脚组装）
+
+在自写生成脚本时，将 `scripts/` 加入 `sys.path` 后导入使用：
+
+```python
+from report_style import (C, esc, hms, ms, svg_line_chart, svg_bar_chart,
+                          sleep_bar, stat, kv, note, card, grid, chart_cap,
+                          hero, render_page)
+```
+
+所有页面为中文界面，页脚必须保留免责声明：**"本报告所有数据来自 Garmin Connect 自动记录，分析结果仅供参考，不构成医疗或专业训练建议。"**
 
 ## 跑步/比赛数据分析流程
 
@@ -252,7 +271,7 @@ python3 scripts/garmin_activity_files.py query --file /tmp/activity_<ID>.fit --d
   ```bash
   python3 scripts/garmin_chart.py dashboard --days <N> --output ~/Desktop/race-analysis.html
   ```
-- **方式二（通用，比赛为历史日期时）**：由于 `garmin_chart.py` 仅支持 `--days`（最近 N 天），无法精确指定历史日期范围。此时应基于第 3 步已采集的 JSON 数据，自行生成一个包含 Chart.js 的 HTML 文件，重点呈现：
+- **方式二（通用，比赛为历史日期时）**：由于 `garmin_chart.py` 仅支持 `--days`（最近 N 天），无法精确指定历史日期范围。此时应基于第 3 步已采集的 JSON 数据，**导入 `scripts/report_style.py` 组件自行生成 HTML**（禁止使用 Chart.js 等外部依赖），重点呈现：
   - 赛前→比赛→赛后 7 天的**身体电量、HRV、静息心率、睡眠评分、压力**趋势折线图；
   - 比赛当日活动的**配速曲线、心率曲线、海拔剖面**；
   - 关键指标统计卡片（赛前 3 天均值 vs 赛后 3 天均值 vs 比赛日值）；
@@ -366,7 +385,7 @@ python3 scripts/garmin_activity_files.py query --file /tmp/activity_<ID>.fit --d
 
 - **创建日期**：2026-11-11
 - **作者**：Earthaveeman
-- **版本**：1.0.2（2026-11-16 更新，新增「跑步/比赛数据分析流程」，明确比赛日期前后各 3 天全量数据采集与 HTML 可视化输出）
-- **历史版本**：1.0.1（2026-11-12 更新，平台通用化与双区域支持说明）；1.0.0（2026-11-11 首次发布，中国大陆适配版）
+- **版本**：1.1.0（2026-11-24 更新，新增 `scripts/report_style.py` 统一报告样式模块：纯内联 SVG、无外部依赖，garmin_chart.py 全面改版为比赛分析报告同款样式，SKILL.md 明确所有 HTML 输出的样式规范）
+- **历史版本**：1.0.2（2026-11-16，新增「跑步/比赛数据分析流程」）；1.0.1（2026-11-12，平台通用化与双区域支持说明）；1.0.0（2026-11-11 首次发布，中国大陆适配版）
 - **依赖**：garminconnect、fitparse、gpxpy（Python 库）
 - **许可证**：MIT

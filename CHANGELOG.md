@@ -1,5 +1,15 @@
 # 更新日志
 
+## v1.1.0（2026-11-24）
+
+### 🎨 统一报告样式（重磅）
+
+- 新增 `scripts/report_style.py` 共享样式模块：抽取 `example/` 比赛分析报告的完整设计系统（全局 CSS、调色板、SVG 图表组件、页面组件），供所有 HTML 报告生成脚本复用
+- `garmin_chart.py` 全面改版：弃用 Chart.js 与 CDN 依赖，改为**纯内联 SVG** 渲染（可离线直接打开），输出样式与比赛分析报告完全一致——蓝色渐变 hero 横幅、编号章节、统计卡片网格、note 提示条、kv 键值行、sleepbar 睡眠阶段堆叠条、sticky 表头表格、中文界面 + 免责声明页脚
+- CLI 完全兼容旧版：`garmin_chart.py {sleep,body_battery,hrv,activities,dashboard} --days N --output path`，数据获取逻辑（garmin_data.py）未做任何改动
+- 各图表新增自动解读 note：睡眠评分/身体电量水平/HRV 趋势按数据自动选择提示色与文案
+- SKILL.md 新增「统一报告样式（report_style.py）」章节，明确所有 HTML 输出（含 AI 自行生成的比赛分析页面）必须采用该样式规范，并禁止外部依赖
+
 ## v1.0.1（2026-11-12）
 
 ### 🌐 平台通用化
