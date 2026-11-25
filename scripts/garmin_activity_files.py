@@ -7,6 +7,7 @@ Extract GPS, elevation, pace, heart rate, power, cadence, etc.
 import json
 import sys
 import os
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -28,10 +29,14 @@ except ImportError:
     HAS_GPXPY = False
 
 
-def download_activity_file(client, activity_id, file_format="fit", output_dir="/tmp"):
+def download_activity_file(client, activity_id, file_format="fit", output_dir=None):
     """Download activity FIT or GPX file."""
     try:
-        output_path = f"{output_dir}/activity_{activity_id}.{file_format.lower()}"
+        if not output_dir:
+            # Default to the platform temp dir (works on Windows/macOS/Linux)
+            output_dir = tempfile.gettempdir()
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, f"activity_{activity_id}.{file_format.lower()}")
         
         if file_format.lower() == "fit":
             data = client.download_activity(activity_id, dl_fmt=client.ActivityDownloadFormat.ORIGINAL)
@@ -279,7 +284,7 @@ def main():
     parser.add_argument("--file", help="Path to local FIT/GPX file")
     parser.add_argument("--distance", type=float, help="Query data at distance (meters)")
     parser.add_argument("--time", help="Query data at time (ISO format)")
-    parser.add_argument("--output-dir", default="/tmp", help="Output directory")
+    parser.add_argument("--output-dir", default=None, help="Output directory (default: system temp dir)")
     
     args = parser.parse_args()
     

@@ -253,11 +253,12 @@ python3 scripts/garmin_data.py summary      --start $START --end $END   # 综合
 2. 下载并解析原始文件，获取逐点 GPS、海拔、配速、心率、步频、功率等：
 
 ```bash
-python3 scripts/garmin_activity_files.py download --activity-id <ID> --format fit --output-dir /tmp
-python3 scripts/garmin_activity_files.py analyze  --file /tmp/activity_<ID>.fit
-python3 scripts/garmin_activity_files.py parse    --file /tmp/activity_<ID>.fit
+python3 scripts/garmin_activity_files.py download --activity-id <ID> --format fit
+# 默认保存到系统临时目录（下载结果 JSON 的 "file" 字段为实际路径），之后：
+python3 scripts/garmin_activity_files.py analyze  --file <下载结果中的文件路径>
+python3 scripts/garmin_activity_files.py parse    --file <下载结果中的文件路径>
 # 如需查询特定距离/时间点的数据：
-python3 scripts/garmin_activity_files.py query --file /tmp/activity_<ID>.fit --distance 5000
+python3 scripts/garmin_activity_files.py query --file <下载结果中的文件路径> --distance 5000
 ```
 
 ### 第 4 步：综合分析
@@ -320,10 +321,11 @@ python3 scripts/garmin_activity_files.py query --file /tmp/activity_<ID>.fit --d
 - 正常范围因人而异（20-200+ 毫秒）
 
 ### 静息心率（次/分）
-越低通常代表心血管功能越好：
-- **运动员**：40-60 次/分
-- **有锻炼习惯的成年人**：60-70 次/分
-- **普通成年人**：70-80 次/分
+越低通常代表心血管功能越好（与 `references/health_analysis.md` 保持一致）：
+- **运动员**：40-55 次/分
+- **经常锻炼的成年人**：55-65 次/分
+- **普通成年人**：60-80 次/分
+- **缺乏运动者**：70-90 次/分
 - 突然升高可能提示压力增大、生病或训练过度
 
 ### 压力水平
@@ -380,12 +382,12 @@ python3 scripts/garmin_activity_files.py query --file /tmp/activity_<ID>.fit --d
 | **睡眠阶段** | 浅睡、深睡、快速眼动、清醒 | 浅睡、慢波睡眠、快速眼动、清醒 |
 | **运动记录** | 内置 GPS，多种运动模式 | 训练负荷评分（0-21） |
 | **压力** | 全天压力水平 | 不直接监测 |
-| **接口** | 非官方（garminconnect 库） | 官方 OAuth |
+| **接口** | garminconnect 库 | 官方 OAuth |
 | **设备类型** | 手表、运动手环 | 仅腕带式设备 |
 
 ## 参考文档
 
-- `references/api.md` —— 佳明 Connect 接口详细说明（非官方）
+- `references/api.md` —— 佳明 Connect 接口详细说明
 - `references/health_analysis.md` —— 有科学依据的健康数据解读方法
 - [佳明 Connect](https://connect.garmin.com) —— 官方网页版（中国大陆账户请使用 [connect.garmin.cn](https://connect.garmin.cn)）
 
